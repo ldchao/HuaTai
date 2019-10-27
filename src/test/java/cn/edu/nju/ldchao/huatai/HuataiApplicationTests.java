@@ -19,25 +19,31 @@ class HuataiApplicationTests {
     @Test
     void contextLoads() {
         List<String> idList = new ArrayList<>();
+        List<Double> proportionList = new ArrayList<>();
         NumberFormat format = NumberFormat.getPercentInstance();
         format.setMaximumFractionDigits(2);//设置保留几位小数
         try {
-            double maxDrawDown = drawDownService.getMaxDrawDown(idList);
+            double maxDrawDown = drawDownService.getMaxDrawDown(idList,proportionList);
             System.out.println(format.format(maxDrawDown));
         } catch (DataProcessingException e) {
             System.out.println(e.getMessage());
         }
         idList.add("1");
+        proportionList.add(1d);
         try {
-            double maxDrawDown = drawDownService.getMaxDrawDown(idList);
+            double maxDrawDown = drawDownService.getMaxDrawDown(idList,proportionList);
             System.out.println(format.format(maxDrawDown));
         } catch (DataProcessingException e) {
             System.out.println(e.getMessage());
         }
+        proportionList = new ArrayList<>();
+        proportionList.add(0.2d);
         idList.add("2");
+        proportionList.add(0.4d);
         idList.add("3");
+        proportionList.add(0.4d);
         try {
-            double maxDrawDown = drawDownService.getMaxDrawDown(idList);
+            double maxDrawDown = drawDownService.getMaxDrawDown(idList,proportionList);
             System.out.println(format.format(maxDrawDown));
         } catch (DataProcessingException e) {
             System.out.println(e.getMessage());

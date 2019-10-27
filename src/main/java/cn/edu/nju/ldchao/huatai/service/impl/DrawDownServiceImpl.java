@@ -27,7 +27,7 @@ public class DrawDownServiceImpl implements DrawDownService {
     }
 
     @Override
-    public Double getMaxDrawDown(List<String> idList) throws DataProcessingException {
+    public Double getMaxDrawDown(List<String> idList,List<Double> proportionList) throws DataProcessingException {
         if (null == idList || idList.isEmpty()) {
             throw new DataProcessingException("Id list is empty.", 0d);
         }
@@ -48,7 +48,7 @@ public class DrawDownServiceImpl implements DrawDownService {
             List<Double> startMoney = getStartMoney(fundList);
 
             // 取投资组合起始日期当天所有产品对应的每日资产最大值作为投资组合的起始资产，并按照占比分配资金至各个实际产品
-            List<Double> formatStartMoney = formatStartMoney(startMoney);
+            List<Double> formatStartMoney = formatStartMoney(startMoney,proportionList);
 
             int fundLength = startMoney.size();
             int worthLength = fundList.get(0).size();
@@ -146,13 +146,12 @@ public class DrawDownServiceImpl implements DrawDownService {
         return startMoney;
     }
 
-    private List<Double> formatStartMoney(List<Double> startMoney) {
+    private List<Double> formatStartMoney(List<Double> startMoney,List<Double> proportionList) {
         double maxMoney = Collections.max(startMoney);
-        double sumMoney = startMoney.stream().mapToDouble(Double::doubleValue).sum();
 
         List<Double> result = new ArrayList<>(startMoney.size());
-        for (Double d : startMoney) {
-            result.add(maxMoney * d / sumMoney);
+        for (Double d : proportionList) {
+            result.add(maxMoney * d);
         }
         return result;
     }

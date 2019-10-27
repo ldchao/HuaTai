@@ -4,7 +4,7 @@ import cn.edu.nju.ldchao.huatai.aop.LimitAnnotaiton;
 import cn.edu.nju.ldchao.huatai.exception.DataProcessingException;
 import cn.edu.nju.ldchao.huatai.service.DrawDownService;
 import cn.edu.nju.ldchao.huatai.util.RedisUtil;
-import org.apache.commons.lang3.StringUtils;
+import cn.edu.nju.ldchao.huatai.vo.IdVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,8 +13,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -37,10 +39,10 @@ public class DrawDownController {
 
     @LimitAnnotaiton(name = "MaxDrawDown", period = 100, count = 10)
     @PostMapping(value = "getMaxDrawDown")
-    public String getMaxDrawDown(@RequestBody List<String> idList) {
-        logger.debug("Request parameter: {}", Arrays.toString(idList.toArray()));
-        if (idList.size() > getAllIds().size()) {
-            logger.warn("Suspected DDOS attack, the size of idList is {}.", idList.size());
+    public String getMaxDrawDown(@RequestBody List<IdVO> idVoList) {
+        logger.debug("Request parameter: {}", Arrays.toString(idVoList.toArray()));
+        if (idVoList.size() > getAllIds().size()) {
+            logger.warn("Suspected DDOS attack, the size of idList is {}.", idVoList.size());
             return "Invalid id list.";
         }
 
@@ -48,8 +50,25 @@ public class DrawDownController {
         String result;
 
         //  从缓存中获取
-        Collections.sort(idList);
-        String key = "MDD_"+StringUtils.join(idList.toArray(), ",");
+        idVoList.sort(Comparator.comparing(IdVO::getId));
+
+        List<String> idList = new ArrayList<>(idVoList.size());
+        List<Double> proportionList = new ArrayList<>(idVoList.size());
+        double proportionSum = 0;
+        for (IdVO idVo : idVoList) {
+            if (idVo != null && idVo.getId() != null && idVo.getProportion() != null) {
+                idList.add(idVo.getId());
+                proportionList.add(idVo.getProportion());
+                proportionSum += idVo.getProportion();
+            } else {
+                return "The parameter is wrong.";
+            }
+        }
+        if (Double.compare(proportionSum, 1) != 0) {
+            return "The proportion is wrong.";
+        }
+
+        String key = "MDD_"+Arrays.toString(idVoList.toArray());
         if (redisUtil.hasKey(key)) {
             result = redisUtil.get(key);
             if (result != null) {
@@ -60,7 +79,7 @@ public class DrawDownController {
         }
 
         try {
-            result = format.format(drawDownService.getMaxDrawDown(idList));
+            result = format.format(drawDownService.getMaxDrawDown(idList, proportionList));
         } catch (DataProcessingException e) {
             logger.error("Data processing Exception:{}", e.getMessage());
             result = e.getMessage();

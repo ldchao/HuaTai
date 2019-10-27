@@ -9,7 +9,7 @@ import java.util.List;
  */
 public interface DrawDownService {
 
-    Double getMaxDrawDown(List<String> idList) throws DataProcessingException;
+    Double getMaxDrawDown(List<String> idList,List<Double> proportionList) throws DataProcessingException;
 
     List<String> getAllIds();
 }
