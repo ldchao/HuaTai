@@ -1,0 +1,8 @@
+spring:
+  redis:
+    host: 119.3.13.8
+logging:
+  file:
+    path: ./log/
+  level:
+    cn.edu.nju.ldchao.huatai: error

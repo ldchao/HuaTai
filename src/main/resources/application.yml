@@ -1,0 +1,33 @@
+spring:
+  profiles:
+    active: dev
+  #  datasource:
+  #    username: root
+  #    password: ldchao
+  #    url: jdbc:mysql://47.101.199.12:3306/user_story_mapping?characterEncoding=utf8&useSSL=false
+  #    driver-class-name: com.mysql.cj.jdbc.Driver
+  #  jpa:
+  #    hibernate:
+  #      ddl-auto: none
+  #    database-platform: org.hibernate.dialect.MySQL5Dialect
+  thymeleaf:
+    mode: LEGACYHTML5
+    cache: false
+  redis:
+    port: 6379
+    password: ldchao
+    database: 0 # Redis数据库索引（默认为0）
+    jedis:
+      pool:
+        max-active: 50 # 连接池最大连接数（使用负值表示没有限制）
+        max-wait: 3000 # 连接池最大阻塞等待时间（使用负值表示没有限制）
+        max-idle: 20 # 连接池中的最大空闲连接
+        min-idle: 2 # 连接池中的最小空闲连接
+    timeout: 5000 # 连接超时时间（毫秒）
+
+server:
+  port: 8088
+customize:
+  default:
+    file:
+      path: ''

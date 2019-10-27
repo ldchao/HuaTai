@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Max draw down</title>
+    <!-- Load required Bootstrap and BootstrapVue CSS -->
+    <link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css"/>
+    <link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.css"/>
+
+    <script src="https://cdn.staticfile.org/vue/2.2.2/vue.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <!-- Load Vue followed by BootstrapVue -->
+    <script src="https://unpkg.com/vue@latest/dist/vue.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.js"></script>
+</head>
+<body>
+<div id="app">
+    <b-container class="bv-example-row">
+    <b-row class="justify-content-md-center">
+        <b-col col lg="2"></b-col>
+        <b-col cols="12" md="auto">
+            <div style="margin-top: 20px">
+                <b-form-group label="Select ids:">
+                    <b-form-checkbox-group
+                            id="checkbox-group-1"
+                            v-model="selected"
+                            :options="idList"
+                            name="flavour-1"
+                    ></b-form-checkbox-group>
+                </b-form-group>
+                <div>Selected: <strong>{{ selected }}</strong></div>
+                <b-btn style="margin-top: 10px;margin-bottom: 10px" variant="outline-info" @click="getMaxDrawDown">Get
+                    Max Draw
+                    Down
+                </b-btn>
+                <div v-if="isShow">Max Draw Down: <strong>{{ maxDrawDown }}</strong></div>
+            </div>
+        </b-col>
+        <b-col col lg="2"></b-col>
+    </b-row>
+    </b-container>
+</div>
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+            idList: [],
+            selected: [],
+            maxDrawDown: 0,
+            isShow: false
+        },
+        methods: {
+            getMaxDrawDown: function () {
+                let self = this;
+                axios.post('/getMaxDrawDown', self.selected)
+                    .then(response => (self.maxDrawDown = response.data))
+                    .catch(function (error) { // 请求失败处理
+                        console.log(error);
+                    });
+                this.isShow = true
+            }
+        },
+        mounted() {
+            let self = this;
+            axios.get('/getAllIds')
+                .then(function (response) {
+                    self.idList = response.data;
+                })
+                .catch(function (error) {
+                    console.log(error);
+                })
+        }
+    })
+</script>
+</body>
+</html>

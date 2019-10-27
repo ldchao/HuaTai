@@ -1,0 +1,10 @@
+spring:
+  redis:
+    host: 119.3.13.8
+logging:
+  level:
+    cn.edu.nju.ldchao.huatai: debug
+customize:
+  default:
+    file:
+      path: 'D:\software\Anaconda3\envs\py3\Practice\file\test.txt'
