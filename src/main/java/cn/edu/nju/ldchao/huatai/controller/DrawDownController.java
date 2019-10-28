@@ -7,6 +7,7 @@ import cn.edu.nju.ldchao.huatai.util.RedisUtil;
 import cn.edu.nju.ldchao.huatai.vo.IdVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -29,6 +29,9 @@ public class DrawDownController {
     private final RedisUtil redisUtil;
     private NumberFormat format;
     private static Logger logger = LoggerFactory.getLogger(DrawDownController.class);
+
+    @Value("${customize.default.useCache}")
+    private boolean useCache;
 
     public DrawDownController(DrawDownService drawDownService, RedisUtil redisUtil) {
         this.drawDownService = drawDownService;
@@ -51,7 +54,6 @@ public class DrawDownController {
 
         //  从缓存中获取
         idVoList.sort(Comparator.comparing(IdVO::getId));
-
         List<String> idList = new ArrayList<>(idVoList.size());
         List<Double> proportionList = new ArrayList<>(idVoList.size());
         double proportionSum = 0;
@@ -68,15 +70,19 @@ public class DrawDownController {
             return "The proportion is wrong.";
         }
 
-        String key = "MDD_"+Arrays.toString(idVoList.toArray());
-        if (redisUtil.hasKey(key)) {
-            result = redisUtil.get(key);
-            if (result != null) {
-                redisUtil.expire(key); // 重置过期时间
-                logger.debug("Request result: {}, use {} ms, through redis.", result, System.currentTimeMillis() - startTime);
-                return result;
+        String key = "MDD_";
+        if (useCache) {
+            key += Arrays.toString(idVoList.toArray());
+            if (redisUtil.hasKey(key)) {
+                result = redisUtil.get(key);
+                if (result != null) {
+                    redisUtil.expire(key); // 重置过期时间
+                    logger.debug("Request result: {}, use {} ms, through redis.", result, System.currentTimeMillis() - startTime);
+                    return result;
+                }
             }
         }
+
 
         try {
             result = format.format(drawDownService.getMaxDrawDown(idList, proportionList));
@@ -84,7 +90,9 @@ public class DrawDownController {
             logger.error("Data processing Exception:{}", e.getMessage());
             result = e.getMessage();
         }
-        redisUtil.set(key, result); // 将值加入缓存
+        if (useCache) {
+            redisUtil.set(key, result); // 将值加入缓存
+        }
         logger.debug("Request result: {}, use {} ms, through compute.", result, System.currentTimeMillis() - startTime);
         return result;
     }

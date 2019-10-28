@@ -31,3 +31,4 @@ customize:
   default:
     file:
       path: ''
+    useCache: true

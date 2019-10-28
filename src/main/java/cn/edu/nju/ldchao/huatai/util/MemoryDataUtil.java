@@ -24,6 +24,9 @@ public class MemoryDataUtil {
     @Value("${customize.default.file.path}")
     private String defaultFilePath;
 
+    @Value("${customize.default.useCache}")
+    private boolean useCache;
+
     public MemoryDataUtil(RedisUtil redisUtil) {
         this.redisUtil = redisUtil;
     }
@@ -69,7 +72,9 @@ public class MemoryDataUtil {
                 }
                 ids = new ArrayList<>(tmpAllFunds.keySet());
                 allFunds = tmpAllFunds;
-                redisUtil.clear();
+                if (useCache) {
+                    redisUtil.clear();
+                }
             } else {
                 logger.debug("No need to refresh the funds.");
             }
